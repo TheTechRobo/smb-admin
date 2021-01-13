@@ -35,21 +35,21 @@ VERSION="1.08.06"
 if len(sys.argv)>1:
 	ARG=sys.argv[1]
 	if ARG=="-v":
-		print _("verbose mode")
+		print(_("verbose mode"))
 	if ARG=="-V":
-		print _("smb-admin version: "),VERSION
+		print(_("smb-admin version: "),VERSION)
 		sys.exit()
 else:
 	sys.stdout=open("/dev/null", 'w')
 	sys.stdin=open("/dev/null", 'r')
 if os.access("/etc/debian_version",0)==True:
-	print "this is a debian system"
+	print("this is a debian system")
 	if os.access("/etc/init.d/samba",os.X_OK):
 		RESTART_CMD="/etc/init.d/samba restart"
 	elif os.access("/etc/init.d/smb",os.X_OK):
 		RESTART_CMD="/etc/init.d/smb restart"
 elif os.access("/etc/arch-release",0)==True:
-	print "this is an arch linux system"
+	print("this is an arch linux system")
 	RESTART_CMD="/etc/rc.d/samba restart"
 if os.getuid()!=0:
 	os.system("gksu smb-admin")
@@ -87,23 +87,23 @@ if os.access("/etc/samba/smb.conf",0)==True:
 	outfile.close()
 	try:
 		config=configobj.ConfigObj("/tmp/tmp.conf")
-	except configobj.ConfigObjError, ERROR_OUTPUT:
-		print ERROR_OUTPUT
+	except configobj.ConfigObjError as ERROR_OUTPUT:
+		print(ERROR_OUTPUT)
 		config = ERROR_OUTPUT.config
 		
 else:
-	print "no smb.conf in /etc/samba/ creating a blank one"
+	print("no smb.conf in /etc/samba/ creating a blank one")
 	config=create_conf()
 	config.filename="/etc/samba/smb.conf"
 	config.write()
-for key in config.keys():
-	for subkey in config[key].keys():
+for key in list(config.keys()):
+	for subkey in list(config[key].keys()):
 		config[key].rename(subkey,subkey.lower())
 	config.rename(key,key.lower())
 
 orig_config=configobj.ConfigObj(config)
 compare_conf=configobj.ConfigObj(config)
-for x in  config.keys():
+for x in  list(config.keys()):
 	if "guest ok" in config[x]:
 		public_val=config[x]["guest ok"]
 		config[x]["public"]=public_val
@@ -489,7 +489,7 @@ class GUI(gtk.Window):
 		savebtn.connect("clicked",self.save_config)
 		restrtbtn=gtk.Button(stock="gtk-refresh")
 		restrtbtn.get_children()[0].get_children()[0].get_children()[1].set_label(_("Restart Server"))
-		print restrtbtn.get_children()[0].get_children()[0].get_children()[1]
+		print(restrtbtn.get_children()[0].get_children()[0].get_children()[1])
 #		sys.exit()
 		restrtbtn.connect("clicked",self.restart_server)
 		about=gtk.Button(stock=gtk.STOCK_ABOUT)#"About")
@@ -526,10 +526,10 @@ class GUI(gtk.Window):
 		gui.updateshare()
 		gui.read_conf()
 	def check_guest(self,widget):
-		print "Clicked"
+		print("Clicked")
 	def set_prnt(self,widget):
-		print widget.get_label()
-		print "#####################################\n##############################"
+		print(widget.get_label())
+		print("#####################################\n##############################")
 		if self.shall_prnt.get_active()==True:
 			config["global"]["load printers"]="yes"
 			if "printers" not in config.sections:
@@ -541,7 +541,7 @@ class GUI(gtk.Window):
 			self.prntbtn.set_sensitive(False)
 			self.updateshare()
 		elif self.shall_prnt.get_active()==False:
-			if "printers" in config.keys():
+			if "printers" in list(config.keys()):
 				del config["printers"]
 			config["global"]["load printers"]="no"
 			self.prnt_scw.set_sensitive(True)
@@ -591,8 +591,8 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 	def activate_share_sel(self,widget):
 		self.share_selected(None,None,None)
 	def add_share_activate(self,widget):
-		print "add share activated"
-		print self.sh_entry.get_text()
+		print("add share activated")
+		print(self.sh_entry.get_text())
 		global ORIGINAL_SHARE
 		ORIGINAL_SHARE=self.sh_entry.get_text()
 		if self.sh_entry.get_text().strip() =="homes":
@@ -612,7 +612,7 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		self.share_clear(None)
 
 	def add_share(self,widget):
-		print "adding share !!!!!!!!!!!!!!@@@@@@@@@@@@@@@@@@@@##############"
+		print("adding share !!!!!!!!!!!!!!@@@@@@@@@@@@@@@@@@@@##############")
 		state=[]
 		global ORIGINAL_SHARE
 		if ORIGINAL_SHARE != "":
@@ -631,22 +631,22 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		elif self.local_entry.get_text().strip()=="":
 			if sharename.strip() !="homes":
 				return self.msgbox(_("Please enter a share path."),False)
-		if sharename not in config.keys():
+		if sharename not in list(config.keys()):
 			config[sharename]={}
 		if sharename.strip() !="homes":
 			config[sharename]["path"]=self.local_entry.get_text()
 		elif "path" in config[sharename]:
 			del config[sharename]["path"]
 		if self.comment_entry.get_text().strip()=="":
-			if "comment" in config[sharename].keys():
+			if "comment" in list(config[sharename].keys()):
 				del config[sharename]["comment"]
-				print "deleted comment from share "+sharename
+				print("deleted comment from share "+sharename)
 		else:
 			config[sharename]["comment"]=self.comment_entry.get_text()
 		if self.valuser_entry.get_text().strip()!="":
 			validusers=self.valuser_entry.get_text().strip().strip(",")
 			config[sharename]["valid users"]=validusers
-			print validusers,"    <<<"
+			print(validusers,"    <<<")
 		elif "valid users" in config[sharename]:
 			del config[sharename]["valid users"]
 		config[sharename]["browseable"]=state[0]
@@ -654,13 +654,13 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		config[sharename]["available"]=state[2]
 		config[sharename]["public"]=state[3]
 		config[sharename]["follow symlinks"]=state[4]
-		print sharename
+		print(sharename)
 		if "path" in config[sharename]:
-			print "path = ",config[sharename]["path"]
-		print "browseabel = ",config[sharename]["browseable"]
-		print "writeable = ",config[sharename]["writeable"]
-		print "available = ",config[sharename]["available"]
-		print "public = ",config[sharename]["public"]
+			print("path = ",config[sharename]["path"])
+		print("browseabel = ",config[sharename]["browseable"])
+		print("writeable = ",config[sharename]["writeable"])
+		print("available = ",config[sharename]["available"])
+		print("public = ",config[sharename]["public"])
 		if state[1].strip()=="yes":
 			self.msgbox(_("WARNING: If you have problems writing to this folder remotely, be sure that the Systems Folder Permissions allow write access to the 'Others' group. This can be done via the alt-click on the folder > Properties > Permissions in most file managers."), _("Remote access is limited by Samba and by files or folders permissions being shared. If Samba is set to read/write but the System user account which was used to login to Samba with can read only, then write access will be denied (if logged in as guest, the System account is 'nobody'). The easiest way to fix this is to access folder permissions via your file-manager and change the permissions for 'Others' to Read / Write. If you do not apply them recursively, then only that folder will have the Read / Write access."))
 		self.share_clear(None)
@@ -684,13 +684,13 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		for line in errors:
 			errors_str=errors_str+line
 		if errors == []:
-			print "no errors, show output"
+			print("no errors, show output")
 			if "cannot locate unix account" in output_str.lower():
 				self.msgbox(output_str+_("Please create a system user for that username on this machine first."),False)
 			else:
 				self.msgbox(output_str,False)
 		else:
-			print "errors present, show errors"
+			print("errors present, show errors")
 			self.msgbox(_("Error adding user")+" \'"+user+"\':\n"+errors_str,False)#str(errors).strip("\'[").strip("]\'").strip("\n"))
 		self.unpw2.destroy()
 		#return gui.updateusers(None)
@@ -703,7 +703,7 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		s = self.usertreeview.get_selection()
 		(ls, iter) = s.get_selected()
 		if iter is None:
-			print "nothing selected"
+			print("nothing selected")
 		else:
 			user=ls.get_value(iter,1)
 			if pw1==pw2:
@@ -711,10 +711,10 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 				pdb.stdin.write(pw1+"\n")
 				pdb.stdin.write(pw2+"\n")
 				if pdb.stderr.readlines() ==[]:
-					print "NO ERRORS"
+					print("NO ERRORS")
 					self.msgbox(_("Successfully changed the password")+str(pdb.stdout.readlines()),False)
 				else:
-					print pdb.stderr.readlines()
+					print(pdb.stderr.readlines())
 			else:
 				return self.msgbox(_("The passwords do not match."),False)
 
@@ -726,7 +726,7 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		s = self.sharetreeview.get_selection()
 		(ls, iter) = s.get_selected()	
 		if iter is None:
-			print "nothing selected"
+			print("nothing selected")
 		else:
 			sharename=ls.get_value(iter, 1)
 		if sharename !="":
@@ -742,10 +742,10 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		filew.destroy()
 	
 	def homes_toggle(self,widget):
-		print "homes toggle"
+		print("homes toggle")
 		if self.homes_sel.get_active()==True:
-			if "homes" in config.keys():
-				print "present.. exiting."
+			if "homes" in list(config.keys()):
+				print("present.. exiting.")
 			else:
 				config["homes"]={}
 				config["homes"]["browseable"]="no"
@@ -755,9 +755,9 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 				config["homes"]["follow symlinks"]="yes"
 				config["homes"]["comment"]=_("Shared user home directories")
 		elif self.homes_sel.get_active()==False:
-			if "homes" in config.keys():
+			if "homes" in list(config.keys()):
 				del config["homes"]
-			print "unchecked"
+			print("unchecked")
 		self.updateshare()
 	def kill_pr(self,widget):
 		self.sep_lbl.show()
@@ -806,7 +806,7 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		s = self.psharetreeview.get_selection()
 		(ls, iter) = s.get_selected()
 		if iter is None:
-			print "nothing selected"
+			print("nothing selected")
 		else:
 			self.pr_comment=gtk.Entry()
 			#self.pr_comment.
@@ -858,9 +858,9 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 			self.vbox_pr.show_all()
 			self.load(printername)
 	def mod_pr_cmd(self,widget):
-		print "command executed ###########################"
+		print("command executed ###########################")
 		printername=self.pr_lbl.get_text().lstrip("Settings for ")
-		print config[printername]
+		print(config[printername])
 		state=[]
 		for item in [self.pbrowseable_sel,self.pavail_sel,self.ppub_sel]:
 			type=item.get_active()
@@ -869,11 +869,11 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 			else:
 				type="yes"
 			state.append(type)
-			print state
+			print(state)
 		if self.pr_users.get_text().strip()!="":
 			validusers=self.pr_users.get_text().strip().split(",")
 			config[printername]["valid users"]=validusers
-			print validusers,"    <<<"
+			print(validusers,"    <<<")
 		elif "valid users" in config[printername]:
 			del config[printername]["valid users"]
 		config[printername]["comment"]=self.pr_comment.get_text()
@@ -885,7 +885,7 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		config[printername]["available"]=state[1]
 		config[printername]["public"]=state[2]
 		config[printername]["printable"]="yes"
-		print "done"
+		print("done")
 		gui.updateshare()
 		self.update_printers()
 		self.sep_lbl.show()
@@ -924,12 +924,12 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		else:
 			self.pr_users.set_sensitive(True)
 	def read_conf(self):
-		print config
-		print "#####################"
-		print "reading configuration and applying settings"
+		print(config)
+		print("#####################")
+		print("reading configuration and applying settings")
 		if "netbios name" in config["global"]:
 			if config["global"]["netbios name"].strip()=="":
-				print "you need a netbiosname"
+				print("you need a netbiosname")
 				hostnamecmd=subp.Popen("hostname",shell=True,stdout=subp.PIPE,stderr=subp.PIPE)
 				hostnm=hostnamecmd.stdout.readline().strip()
 				hostnamecmd.stderr.close()
@@ -956,7 +956,7 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		else:
 			self.localmb_sel.set_active(True)
 		if "usershare allow guests" in config["global"]:
-			print "allow guests ="+config["global"]["usershare allow guests"].lower()
+			print("allow guests ="+config["global"]["usershare allow guests"].lower())
 			if config["global"]["usershare allow guests"].lower() in ["true","yes"]:
 				self.usershare_allow_guest.set_active(True)
 			elif config["global"]["usershare allow guests"].lower() in ["false","no"]:
@@ -985,12 +985,12 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		else:
 			self.oslvl_entry.set_text('20')
 		if "wins server" in config["global"]:
-			print "wins server"
+			print("wins server")
 			self.winserv_entry.set_text(config["global"]["wins server"])
 			config["global"]["wins support"]="no"
 			self.winserv_sel3.set_active(True)
 		elif "wins support" not in config["global"]:
-			print "setting winserv sel true"
+			print("setting winserv sel true")
 			self.winserv_sel.set_active(True)
 			self.winserv_entry.set_sensitive(False)
 			self.winserv_entry.set_text("")
@@ -998,13 +998,13 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 			self.winserv_entry.set_sensitive(False)
 			self.winserv_entry.set_text("")
 			if config["global"]["wins support"].lower() in ["false","no"]:
-				print "wins support no"
+				print("wins support no")
 				self.winserv_sel.set_active(True)
 			elif config["global"]["wins support"].lower() in ["true","yes"]:
-				print "wins support yes"
+				print("wins support yes")
 				self.winserv_sel2.set_active(True)
 			#del config["global"]["wins server"]
-		for key in config.keys():
+		for key in list(config.keys()):
 			if key.lower()=="homes":
 				self.homes_sel.set_active(True)
 			
@@ -1015,18 +1015,18 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		s = self.psharetreeview.get_selection()
 		(ls, iter) = s.get_selected()	
 		if iter is None:
-			print "nothing selected"
+			print("nothing selected")
 		else:
 			sharename=ls.get_value(iter, 1)
 		if sharename !="":
-			print sharename
+			print(sharename)
 			del config[sharename]
 			#self.share_clear("worthless data")
 		gui.updateshare()
 		self.update_printers()
 	def restart_server(self,widget):
 		def restart():
-			print "restarting servers"
+			print("restarting servers")
 			global RESTART_CMD
 			#~ if os.access("/etc/init.d/samba",os.X_OK):
 				#~ rsserver=os.system("/etc/init.d/samba restart")
@@ -1048,24 +1048,24 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 			elif response== gtk.RESPONSE_NO:
 				restart()
 			x.destroy()
-			print "configuration has changed. Would you like to save it first?"
+			print("configuration has changed. Would you like to save it first?")
 	def restore_conf(self,widget):
 		global config
 		config=configobj.ConfigObj(orig_config)
 		self.read_conf()
 		gui.updateshare()
-		if "printers" not in config.keys():
+		if "printers" not in list(config.keys()):
 			self.shall_prnt.set_active(False)
-		elif "printers" in config.keys():
+		elif "printers" in list(config.keys()):
 			self.shall_prnt.set_active(True)
 			#del orig_config["global"]["wins server"]
 	
 	def save_config(self,widget):
 		global compare_conf
-		print "saving configurations"
+		print("saving configurations")
 		list=[]
 		run=False
-		for item in config.keys():
+		for item in list(config.keys()):
 			if item != "global":
 				list.append(item)
 		for share in list:
@@ -1080,20 +1080,20 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 				x.show_all()
 				response = x.run()
 				if response == gtk.RESPONSE_YES:
-					print "yes"
+					print("yes")
 					config["global"]["map to guest"]="bad user"
 				elif response== gtk.RESPONSE_NO:
-					print "well ok then so much for windows users"
+					print("well ok then so much for windows users")
 				x.destroy()
 		if self.winserv_sel3.get_active()==True:
-			print self.winserv_sel3.get_active()
+			print(self.winserv_sel3.get_active())
 			config["global"]["wins server"]=self.winserv_entry.get_text()
 		elif "wins server" in config["global"]:
 			del config["global"]["wins server"]
 		if self.nb_name_entry.get_text().strip() =="":
-			if "netbios name" in config["global"].keys():
+			if "netbios name" in list(config["global"].keys()):
 				del config["global"]["netbios name"]
-				print "\n\n\n deleted nb name\n\n\n"
+				print("\n\n\n deleted nb name\n\n\n")
 		else:
 			config["global"]["netbios name"]=self.nb_name_entry.get_text()
 		if self.oslvl_entry.get_text().strip() =="":
@@ -1109,16 +1109,16 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 			self.usershare_max_shares_entry.set_text("0")
 		config["global"]["usershare max shares"]=self.usershare_max_shares_entry.get_text()
 		if self.usershare_owner_only.get_active()==True:
-			print "its true"
+			print("its true")
 			config["global"]["usershare owner only"]="yes"
 		elif self.usershare_owner_only.get_active()==False:
-			print "its false"
+			print("its false")
 			config["global"]["usershare owner only"]="no"
 		if self.usershare_allow_guest.get_active() == True:
-			print "from save, guests = true"
+			print("from save, guests = true")
 			config["global"]["usershare allow guests"]="yes"
 		elif self.usershare_allow_guest.get_active() == False:
-			print "from save, guests = false"
+			print("from save, guests = false")
 			config["global"]["usershare allow guests"]="no"
 
 		config.filename="/etc/samba/smb.conf"
@@ -1131,11 +1131,11 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		s = self.sharetreeview.get_selection()
 		(ls, iter) = s.get_selected()	
 		if iter is None:
-			print "nothing selected"
+			print("nothing selected")
 			return
 		else:
 			sharename=ls.get_value(iter, 1)
-		print sharename+" selected"
+		print(sharename+" selected")
 		self.sh_entry.set_text(sharename)
 		if sharename.lower() != "homes":
 			self.local_entry.set_text(config[sharename]["path"])
@@ -1144,15 +1144,15 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		else:
 			self.comment_entry.set_text("")
 		if "follow symlinks" in config[sharename]:
-			print "yes it is"
+			print("yes it is")
 			if config[sharename]["follow symlinks"].lower() in ["true","yes"]:
 				self.follow_sel.set_active(True)
 			else:
 				self.follow_sel.set_active(False)			
 		if "valid users" in config[sharename]:
-			print config[sharename]["valid users"]
-			print "valid users"
-			print config[sharename]["valid users"]
+			print(config[sharename]["valid users"])
+			print("valid users")
+			print(config[sharename]["valid users"])
 			valusers=''
 			if type(config[sharename]["valid users"]).__name__=="list":
 				for item in config[sharename]["valid users"]:
@@ -1224,7 +1224,7 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 				self.print_hbbox.hide()
 			x.destroy()
 		def auto_set():
-			print "auto set running"
+			print("auto set running")
 			config["global"]["printcap name"]="cups"
 			config["global"]["printing"]="cups"
 			self.shall_prnt.show()
@@ -1259,29 +1259,29 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 			udt.start()
 		elif pagenum==3:
 			if "printcap name" not in config["global"]:
-				print "no printcap name set... running auto set"
+				print("no printcap name set... running auto set")
 				auto_set()
 			elif config["global"]["printcap name"].lower() !="cups":
 				return sub_func()
 			if "printing" not in config["global"]:
-				print "no printing set... running auto set"
+				print("no printing set... running auto set")
 				return auto_set()
 			elif config["global"]["printing"].lower()  !="cups":
 				return sub_func()
-			print "now to update printer list"
+			print("now to update printer list")
 			self.update_printers()
 			if "load printers" in config["global"]:
 				if config["global"]["load printers"].lower() in ["true","yes"]:
 					self.shall_prnt.set_active(True)
 				elif config["global"]["load printers"].lower() in ["false","no"]:
 					self.shall_prnt.set_active(False)
-			print "updateing"
+			print("updateing")
 			self.update_printers()
 	def toggle_enable_disable(self,widget):
 		s = self.usertreeview.get_selection()
 		(ls, iter) = s.get_selected()
 		if iter is None:
-			print "nothing selected"
+			print("nothing selected")
 		else:
 			user=ls.get_value(iter,1)
 			STATUS=""
@@ -1289,14 +1289,14 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 			for line in pdbeditcmd.stdout.readlines():
 #				print line
 				if "Flags" in line:
-					print "found flags"
+					print("found flags")
 					line2=line.split("[")[1].strip().strip("]").strip()
 					STATUS=""
 					if "D" in line2:
-						print "setting disabled"
+						print("setting disabled")
 						STATUS="Disabled"
 					else:
-						print "setting enabled"
+						print("setting enabled")
 						STATUS="Enabled"
 			pdbeditcmd.stdout.close()
 			if STATUS=="Enabled":
@@ -1319,7 +1319,7 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 				self.update_printers()
 				gui.updateshare()
 			elif ls.get_value(iter,2).lower()=="no":
-				if printername not in config.keys():
+				if printername not in list(config.keys()):
 					config[printername]={}
 				config[printername]["comment"]=_("Shared printer ")+printername
 				config[printername]["path"]="/var/spool/samba"
@@ -1377,7 +1377,7 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		s = self.usertreeview.get_selection()
 		(ls, iter) = s.get_selected()
 		if iter is None:
-			print "nothing selected"
+			print("nothing selected")
 		else:
 			username=ls.get_value(iter,1)
 			if data=="del":
@@ -1386,10 +1386,10 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 				x.show_all()
 				response = x.run()
 				if response == gtk.RESPONSE_YES:
-					print "deleting user: "+username
+					print("deleting user: "+username)
 					cx=subp.Popen("pdbedit -x "+username,shell=True)
 				elif response== gtk.RESPONSE_NO:
-					print "Not deleting user: "+username
+					print("Not deleting user: "+username)
 				x.destroy()
 			elif data=="toggle":
 				pdbecmd=subp.Popen("pdbedit -Lv -u "+username,shell=True,stdout=subp.PIPE)
@@ -1400,16 +1400,16 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 						flags=line.split("[")[1].strip().strip("]").strip()
 						flags=flags.strip("TUMWSI")
 				#file.close()
-				print flags
+				print(flags)
 				if ls.get_value(iter,2)=="Enabled":
 					flags="D"+flags
-					print flags+"<<<<FLAGS for disable"
-					print ("pdbedit -c \"["+flags+"]\" -u "+username)
+					print(flags+"<<<<FLAGS for disable")
+					print(("pdbedit -c \"["+flags+"]\" -u "+username))
 					pdbencmd=subp.Popen("pdbedit -c \"["+flags+"]\" -u "+username,shell=True)
 				elif ls.get_value(iter,2)=="Disabled":
 					flags=flags.replace("D","")
-					print flags+"<<<<< FLAGS for enable"
-					print ( "pdbedit -c \"["+flags+"]\" -u  "+username)
+					print(flags+"<<<<< FLAGS for enable")
+					print(( "pdbedit -c \"["+flags+"]\" -u  "+username))
 					pdbdiscmd=subp.Popen("pdbedit -c \"["+flags+"]\" -u  "+username,shell=True)
 			elif data=="changepw":
 				return self.unamepw(data,_("Please enter the new passwords for ")+username)
@@ -1426,10 +1426,10 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 
 
 	def update_printers(self):
-		print "UPDATING THE PRINTERS"
+		print("UPDATING THE PRINTERS")
 		dictop={}
 		if os.access("/etc/cups/printers.conf",os.R_OK)==True:
-			print "access granted"
+			print("access granted")
 			printers_file=open("/etc/cups/printers.conf")
 			printer_name=""
 			shared_state=""
@@ -1447,24 +1447,24 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 					dictop[place]["cups_share_state"]=shared_state
 				elif line.startswith("</Printer"):
 					place=place+1
-			for x in dictop.keys():
+			for x in list(dictop.keys()):
 				if "cups_share_state" not in dictop[x]:
-					print "missing"
+					print("missing")
 					dictop[x]["cups_share_state"]="missing"
 			printers_file.close()
 			z=0
 			self.prntsharelist.clear()
-			for item in dictop.keys():
+			for item in list(dictop.keys()):
 				printer=dictop[item]["name"]
 				if self.shall_prnt.get_active()==True:
 					smbshare="yes"
-				elif printer in config.keys():
+				elif printer in list(config.keys()):
 					smbshare="yes"
 				else:
 					smbshare="no"
 				iter = self.prntsharelist.append([z,printer,smbshare])#,dictop[printer]])
 				z=z+1
-			if "printers" in config.keys():
+			if "printers" in list(config.keys()):
 				self.shall_prnt.set_active(True)
 				#self.set_prnt()
 			else:
@@ -1529,7 +1529,7 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 		pbrowseable=[]
 		ppublic=[]
 		public=[]
-		shares=config.keys()
+		shares=list(config.keys())
 		for item in shares:
 			item=item.strip()
 			if item not in ["global"]:
@@ -1609,8 +1609,8 @@ On a Debian GNU/Linux system you can find a copy of this license in\n\
 
 
 	def winserv_func(self,widget,data):
-		print self.winserv_sel3.get_active()
-		print data
+		print(self.winserv_sel3.get_active())
+		print(data)
 		if self.winserv_sel3.get_active()==True:
 			self.winserv_entry.set_sensitive(True)
 		else:
