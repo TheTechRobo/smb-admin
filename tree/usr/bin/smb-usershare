@@ -39,22 +39,22 @@ gettext.textdomain(APP)
 _ = gettext.gettext
 VERSION="0.2.2"
 if "-V" in sys.argv:
-	print "Smb-Usershare version: ",VERSION
+	print("Smb-Usershare version: ",VERSION)
 	sys.exit()
 if "-h" in sys.argv or "--help" in sys.argv:
-	print "Usage:"
-	print "\t-h \t"+_("Display this message")
-	print "\t-v \t"+_("Verbose mode")
-	print "\t-V \t"+_("Display version information.")
-	print "\t-p \t"+_("Start in Add Share mode with the path")
-	print "\t\t"+_("filled in with the path provided.")
-	print "\t\t"+_("Example:")
-	print ""
-	print "\t\t"+_("smb-usershare -p /home/user/Music")
-	print ""
+	print("Usage:")
+	print("\t-h \t"+_("Display this message"))
+	print("\t-v \t"+_("Verbose mode"))
+	print("\t-V \t"+_("Display version information."))
+	print("\t-p \t"+_("Start in Add Share mode with the path"))
+	print("\t\t"+_("filled in with the path provided."))
+	print("\t\t"+_("Example:"))
+	print("")
+	print("\t\t"+_("smb-usershare -p /home/user/Music"))
+	print("")
 	sys.exit()
 if "-v" in sys.argv:
-	print "verbose mode"
+	print("verbose mode")
 else:
 	sys.stdout=open("/dev/null", 'w')
 	sys.stdin=open("/dev/null", 'r')
@@ -62,7 +62,7 @@ START_MSG=None
 usr_sh_dir="/var/lib/samba/usershares"
 if os.access("/var/lib/samba/usershares",os.F_OK):
 	if os.access(usr_sh_dir,os.X_OK) and os.access(usr_sh_dir,os.W_OK) and os.access(usr_sh_dir,os.R_OK):
-		print "RWX ACCESS"
+		print("RWX ACCESS")
 	else:
 		START_MSG=_("Your admin needs to give you read, write, and execute access to the directory '/var/lib/samba/usershares' in order for you to be able to create shares as user.")
 else:
@@ -77,7 +77,7 @@ for line in output:
 	share_list.append(line.strip())
 for line in error_out:
 	if "net usershare: usershares are currently disabled" in line:
-		print "Usershare disabled"
+		print("Usershare disabled")
 		START_MSG=line+"\n"+_("Ask your administrator to set 'usershare max shares' in the 'global' section of smb.conf to a value greater than 0")		
 #		sys.exit()
 class GUI(gtk.Window):
@@ -179,7 +179,7 @@ class GUI(gtk.Window):
 		self.show_all_shares= gtk.CheckButton(_("Show shares from all users"),True)
 		self.show_all_shares.connect("clicked",self.updateshare)
 		if os.geteuid()==0:
-			print "ROOT USER"
+			print("ROOT USER")
 			self.sharbox_list.pack_start(self.show_all_shares,False,True,0)
 			
 		self.sharbox_list.pack_start(self.sharescrolledwindow,True,True,0)
@@ -300,8 +300,8 @@ class GUI(gtk.Window):
 	def activate_share_sel(self,widget):
 		self.share_selected(None,None,None)
 	def add_share_activate(self,widget):
-		print "add share activated"
-		print self.sh_entry.get_text()
+		print("add share activated")
+		print(self.sh_entry.get_text())
 		global ORIGINAL_SHARE
 		ORIGINAL_SHARE=self.sh_entry.get_text()
 		if ORIGINAL_SHARE=="":
@@ -309,7 +309,7 @@ class GUI(gtk.Window):
 			self.user_access_cmb.set_active(1)
 		if widget!=None:
 			self.public_sel.set_active(True)
-		print self.sharbox.get_children()[0]
+		print(self.sharbox.get_children()[0])
 		if self.sharbox.get_children()[0] == self.sharbox_list:
 			self.sharbox.remove(self.sharbox_list)
 			self.sharbox.pack_start(self.addsharbox)
@@ -321,14 +321,14 @@ class GUI(gtk.Window):
 	def add_share(self,widget):
 		state=[]
 		if self.show_all_shares.get_active()==True:
-			print "ACTIVE"
+			print("ACTIVE")
 			COMMAND="net usershare -l"
 		else:
-			print "FALSE"
+			print("FALSE")
 			COMMAND="net usershare "
 
 		global ORIGINAL_SHARE
-		print ORIGINAL_SHARE,"this is the original share"
+		print(ORIGINAL_SHARE,"this is the original share")
 		sharename=self.sh_entry.get_text().strip()
 		if sharename.strip()=="":
 			return self.msgbox(_("Please enter a share name."),False)
@@ -344,8 +344,8 @@ class GUI(gtk.Window):
 		index = self.user_access_cmb.get_active()
 		access_list=["Leave Unchanged","Read Only","Read / Write","Deny"]
 		access_type=access_list[index]
-		print access_type
-		print index
+		print(access_type)
+		print(index)
 #		return
 		if access_type=="Leave Unchanged" and ORIGINAL_SHARE != "":
 			#in this case the user is modifying an existing share and
@@ -380,27 +380,27 @@ class GUI(gtk.Window):
 				user_acl="Everyone:d"
 			elif access_type =="Access:":
 				user_acl="Everyone:r"
-		print user_acl,"THIS ONE FIRST"
+		print(user_acl,"THIS ONE FIRST")
 		if "everyone" not in user_acl.lower() and public == "yes":
 			return self.msgbox(_("If you want to allow guest access, you must have a usershare_acl setting for 'Everyone'. To add one, select an access mode from the drop down menu. This will remove the current usershare_acl setting for the share since a setting for 'Everyone' will override any other settings."),False)
 		command ="net usershare add \""+sharename+"\" \""+path+"\" \""+comment+"\" \""+user_acl+"\" guest_ok="+public
-		print command
-		print user_acl
+		print(command)
+		print(user_acl)
 		#~ return
 		netuscmd=subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		output=netuscmd.stdout.readlines()
 		error=netuscmd.stderr.readlines()
 		if netuscmd.wait()==0:
-			print "share added"
+			print("share added")
 			self.msgbox(_("Share added successfully."),False)
 		else:
-			print "else"
+			print("else")
 			msg=""
 			for x in output:
-				print x
+				print(x)
 				msg=msg+x
 			for x in error:
-				print x
+				print(x)
 				msg=msg+x
 			self.msgbox(msg,False)
 		if access_type=="Read / Write":
@@ -424,7 +424,7 @@ class GUI(gtk.Window):
 			error=smbpasscmd.stderr.readlines()
 			if smbpasscmd.wait()==0:
 				if len(output)==0:
-					print "NOTHING"
+					print("NOTHING")
 					self.msgbox(_("Password changed."),False)
 				else:
 					self.msgbox(output,False)
@@ -447,7 +447,7 @@ class GUI(gtk.Window):
 		s = self.sharetreeview.get_selection()
 		(ls, iter) = s.get_selected()	
 		if iter is None:
-			print "nothing selected"
+			print("nothing selected")
 		else:
 			sharename=ls.get_value(iter, 1)
 		if sharename !="":
@@ -455,16 +455,16 @@ class GUI(gtk.Window):
 			output=useshardel.stdout.readlines()
 			error=useshardel.stderr.readlines()
 			if useshardel.wait()==0:
-				print "share deleted"
+				print("share deleted")
 				self.msgbox(_("Shared folder successfully deleted"),False)
 			else:
-				print "else"
+				print("else")
 				msg=""
 				for x in output:
-					print x
+					print(x)
 					msg=msg+x
 				for x in error:
-					print x
+					print(x)
 					msg=msg+x
 				self.msgbox(msg,False)
 			self.share_clear("worthless data")
@@ -493,7 +493,7 @@ class GUI(gtk.Window):
 		return True
 
 	def share_selected(self,x,y,widget):
-		print "SHARE SELECTED FUNC"
+		print("SHARE SELECTED FUNC")
 		if type(widget)==str:
 			sharename=widget
 		else:
@@ -502,16 +502,16 @@ class GUI(gtk.Window):
 			s = self.sharetreeview.get_selection()
 			(ls, iter) = s.get_selected()	
 			if iter is None:
-				print "nothing selected"
+				print("nothing selected")
 				return
 			else:
 				sharename=ls.get_value(iter, 1)
-		print sharename
+		print(sharename)
 		self.sh_entry.set_text(sharename)
 		config=configobj.ConfigObj(subprocess.Popen("net usershare  info \""+sharename+"\"",shell=True,stdout=subprocess.PIPE).stdout.readlines())
 		self.local_entry.set_text(config[sharename]["path"])
 		self.comment_entry.set_text(config[sharename]["comment"])
-		print config[sharename]["guest_ok"]
+		print(config[sharename]["guest_ok"])
 		if config[sharename]["guest_ok"] == "y":
 			self.public_sel.set_active(True)#.append("Yes")
 		elif config[sharename]["guest_ok"] == "n":	
@@ -519,10 +519,10 @@ class GUI(gtk.Window):
 		#self.user_access_cmb.set_active(1)
 		everyone_present=False
 		for perm in config[sharename]["usershare_acl"]:
-			print perm,"######"
+			print(perm,"######")
 			if "Everyone" in perm:
 				everyone_present=True
-				print perm.split(":")[1],"########################"
+				print(perm.split(":")[1],"########################")
 				if perm.split(":")[1].strip() == "F":
 					self.user_access_cmb.set_active(2)
 				elif perm.split(":")[1].strip() == "R":
@@ -553,18 +553,18 @@ class GUI(gtk.Window):
 		public=[]
 		path=[]
 		if self.show_all_shares.get_active()==True:
-			print "ACTIVE"
+			print("ACTIVE")
 			COMMAND="net usershare -l"
 			self.mod_btn.set_sensitive(False)
 		else:
-			print "FALSE"
+			print("FALSE")
 			COMMAND="net usershare "
 			self.mod_btn.set_sensitive(True)
 		share_list=subprocess.Popen(COMMAND+" list",shell=True,stdout=subprocess.PIPE).stdout.readlines()
-		print share_list
-		print "FOR LOOP NEXT"
+		print(share_list)
+		print("FOR LOOP NEXT")
 		for share in share_list:
-			print share
+			print(share)
 			share=share.strip()
 			info_conf=configobj.ConfigObj(subprocess.Popen(COMMAND+" info \""+share+"\"",shell=True,stdout=subprocess.PIPE).stdout.readlines())
 			comments.append(info_conf[share]["comment"])
@@ -581,8 +581,8 @@ if START_MSG!=None:
 	sys.exit()
 if "-p" in sys.argv:
 	path=sys.argv[sys.argv.index("-p")+1]
-	print "we want to add a share on startup"
-	print "the path is "+path
+	print("we want to add a share on startup")
+	print("the path is "+path)
 	ORIGINAL_SHARE=""
 	gui.local_entry.set_text(sys.argv[sys.argv.index("-p")+1])
 	gui.sh_entry.set_text(sys.argv[sys.argv.index("-p")+1].rsplit("/",1)[1])
